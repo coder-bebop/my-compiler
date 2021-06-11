@@ -45,14 +45,6 @@ class Yaccer:
                  | BOOLEAN '''
         p[0] = p[1]
 
-    def p_prog(self, p):
-        ''' prog : prog expression
-                 | expression'''
-        if len(p) == 3 and p[2][0] is not None:
-            p[0] = p[1] + (p[2],)
-        else:
-            p[0] = (p[1],)
-
     def p_expression(self, p):
         '''expression : closing
                       | conditional
@@ -75,11 +67,11 @@ class Yaccer:
 
     def p_boolean_op(self, p):
         '''boolean_operation : operation EQUAL operation
-                            | operation NOT_EQUAL operation
-                            | operation GREATER operation
-                            | operation LESS operation 
-                            | operation GREATER_EQUAL operation
-                            | operation LESS_EQUAL operation'''
+                             | operation NOT_EQUAL operation
+                             | operation GREATER operation
+                             | operation LESS operation 
+                             | operation GREATER_EQUAL operation
+                             | operation LESS_EQUAL operation'''
         
         if   p[2] == '==': p[0] = p[1] == p[3]
         elif p[2] == '!=': p[0] = p[1] != p[3]
@@ -91,11 +83,16 @@ class Yaccer:
     def p_declaration(self, p):
         ''' declaration : type ID
                         | type ID EQUAL num
+                        | type ID EQUAL bool
                         | type ID EQUAL operation'''
     '''if p[2] in self.symbol_table:'''
 
     def p_parens(self, p):
-        'parens : LPAREN boolean_operation RPAREN'
+        '''parens : LPAREN boolean_operation RPAREN
+                  | LPAREN boolean_operation OR boolean_operation RPAREN
+                  | LPAREN boolean_operation AND boolean_operation RPAREN
+                  | LPAREN parens OR parens RPAREN
+                  | LPAREN parens AND parens RPAREN'''
         p[0] = p[2]
 
     def p_braces(self, p):
@@ -106,10 +103,14 @@ class Yaccer:
             ''' special_statement : parens braces'''
             p[0] = (p[1], p[2])
 
-    def p_expression_to_number(self, p) :
+    def p_number(self, p) :
         'num : NUMBER'
         p[0] = p[1]
         return p[0]
+
+    def p_boolean(self, p):
+        '''bool : TRUE 
+                | FALSE'''
 
     def p_conditional(self, p):
         '''conditional : IF special_statement

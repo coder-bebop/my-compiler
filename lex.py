@@ -11,7 +11,6 @@ class Lexer:
     'if' : 'IF',
     'elif' : 'ELIF',
     'else' : 'ELSE',
-    'then' : 'THEN',
     'while' : 'WHILE',
     'do' : 'DO',
     'for' : 'FOR',

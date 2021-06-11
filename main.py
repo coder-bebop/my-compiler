@@ -13,7 +13,7 @@ def run(sample):
         print("Error in execution")
 
 data = '''
-3 + 4 * 10
+int x = 3 + 4 * 10;
 '''
 
 run(data)
