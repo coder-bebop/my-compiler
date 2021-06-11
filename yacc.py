@@ -39,36 +39,68 @@ class Yaccer:
             p[0] = (p[1],)
 
     def p_type(self, p):
-        ''' type : INT
+        ''' type : INTEGER
                  | FLOAT
                  | STRING
                  | BOOLEAN '''
         p[0] = p[1]
 
+    def p_prog(self, p):
+        ''' prog : prog expression
+                 | expression'''
+        if len(p) == 3 and p[2][0] is not None:
+            p[0] = p[1] + (p[2],)
+        else:
+            p[0] = (p[1],)
+
+    def p_expression(self, p):
+        '''expression : closing
+                      | conditional
+                      | iteration '''
+        p[0] = p[1]
+
     def p_expression_binop(self, p):
         '''operation : operation ADD operation
-                    | operation SUBSTRACT operation
-                    | operation MULTIPLY operation
-                    | operation DIVIDE operation
-                    | operation EXP operation'''
-        if p[2] == '+'  : p[0] = p[1] + p[3]
-        elif p[2] == '-': p[0] = p[1] - p[3]
-        elif p[2] == '*': p[0] = p[1] * p[3]
-        elif p[2] == '/': p[0] = p[1] / p[3]
-        elif p[2] == '^': p[0] = p[1] ** p[3]
+                     | operation SUBSTRACT operation
+                     | operation MULTIPLY operation
+                     | operation DIVIDE operation
+                     | operation EXP operation 
+                     | boolean_operation'''
+
+        if   p[2] == '+' : p[0] = p[1] + p[3]
+        elif p[2] == '-' : p[0] = p[1] - p[3]
+        elif p[2] == '*' : p[0] = p[1] * p[3]
+        elif p[2] == '/' : p[0] = p[1] / p[3]
+        elif p[2] == '^' : p[0] = p[1] ** p[3]
+
+    def p_boolean_op(self, p):
+        '''boolean_operation : operation EQUAL operation
+                            | operation NOT_EQUAL operation
+                            | operation GREATER operation
+                            | operation LESS operation 
+                            | operation GREATER_EQUAL operation
+                            | operation LESS_EQUAL operation'''
+        
+        if   p[2] == '==': p[0] = p[1] == p[3]
+        elif p[2] == '!=': p[0] = p[1] != p[3]
+        elif p[2] == '>' : p[0] = p[1] > p[3]
+        elif p[2] == '<' : p[0] = p[1] < p[3]
+        elif p[2] == '>=': p[0] = p[1] >= p[3]
+        elif p[2] == '<=': p[0] = p[1] <= p[3]
 
     def p_declaration(self, p):
         ''' declaration : type ID
-                        | type ID EQUALS operation'''
+                        | type ID EQUAL num
+                        | type ID EQUAL operation'''
+    '''if p[2] in self.symbol_table:'''
 
     def p_parens(self, p):
-        'parens : LPAREN condition RPAREN'
+        'parens : LPAREN boolean_operation RPAREN'
         p[0] = p[2]
 
     def p_braces(self, p):
         'braces : LBRACE statement RBRACE'
         p[0] = p[2]
-        return p[0]
 
     def p_special_statement(self, p):
             ''' special_statement : parens braces'''
@@ -80,9 +112,9 @@ class Yaccer:
         return p[0]
 
     def p_conditional(self, p):
-        '''expr : IF special_statement
-                | IF special_statement ELSE braces
-                | IF special_statement elif ELSE braces'''
+        '''conditional : IF special_statement
+                        | IF special_statement ELSE braces
+                        | IF special_statement elif ELSE braces'''
         
         if len(p) == 3:
             p[0] = (p[1], p[2], None, None)
@@ -102,18 +134,43 @@ class Yaccer:
 
     def p_iteration(self, p):
         ''' iteration : WHILE parens 
-                    | DO braces WHILE parens'''
+                      | DO braces WHILE parens
+                      | FOR LPAREN for_declaration for_operation RPAREN braces
+                      | FOR LPAREN for_declaration for_operation operation RPAREN braces'''
+        
+        if p[1] == "while":
+            p[0] = (p[1], p[2])
+        elif p[1] == "do":
+            p[0] = (p[1], p[2], p[4])
+        elif p[1] == "for" and p[5] == ')':
+            p[0] = (p[1], p[3], p[4], None, p[6])
+        elif p[1] == "for":
+            p[0] = (p[1], p[3], p[4], p[5], p[7])
 
+    def p_for_decl(self, p):
+        '''for_declaration : SEMICOLON
+                            | declaration SEMICOLON'''
+
+        if p[1] != ";":
+            p[0] = p[1]
+
+    def p_for_op(self, p):
+        '''for_operation : SEMICOLON
+                        | operation SEMICOLON'''
+
+        if p[1] != ";":
+            p[0] = p[1]
 
     def p_closing_statement(self, p):
-        ''' closing : ';'
-                    | statement ';' '''
+        ''' closing : SEMICOLON
+                    | statement SEMICOLON '''
         if p[1] != ";":
             p[0] = p[1]
 
     def p_statement(self, p):
         ''' statement : operation
-                      | declaration '''
+                      | declaration 
+                      | conditional'''
         p[0] = p[1]
 
     def p_error(self, p):
@@ -128,8 +185,3 @@ class Yaccer:
     def build(self, **kwargs):
         self.parser = yacc.yacc(module=self, **kwargs)
         return self.parser
-
-'''parser = yacc.yacc()
-
-res = parser.parse(data)
-print(res)'''

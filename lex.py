@@ -68,7 +68,7 @@ class Lexer:
     t_RBRACE  = r'\}'
     t_SEMICOLON = r'\;'
     t_ID = r'[a-zA-Z_][a-zA-Z0-9_]*'
-    t_NUMBER = r'\d+'
+    t_NUMBER = r'[0-9]+'
 
     t_ignore = ' \t'
     t_ignore_COMMENT = r'\/\/.*'
